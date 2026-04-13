@@ -82,10 +82,8 @@ TD_MAX = 1e6  # maximum dimensionless time
 N_INPUT = 64  # number of early time steps used as input
 N_PREDICT = 192  # number of later time steps to predict (N_TIME_POINTS - N_INPUT)
 
-# Ranges of physical parameters for data generation
-CD_VALUES = np.array(
-    [0.01, 0.05, 0.1, 0.5, 1.0, 5.0, 10.0, 50.0, 100.0, 500.0, 1000.0, 5000.0, 10000.0]
-)
+# Ranges of physical parameters for data generation (log-spaced for CD)
+CD_VALUES = np.logspace(-2, 4, 13)  # 0.01 to 10000, log-uniform coverage
 S_VALUES = np.array([0.0, 0.5, 1.0, 2.0, 3.0, 5.0, 8.0, 10.0, 15.0, 20.0])
 
 # Training parameters
@@ -136,7 +134,8 @@ y_data = pressures_norm[:, N_INPUT:]  # shape: (n_samples, N_PREDICT)
 x_data = torch.tensor(x_data, dtype=torch.float32).unsqueeze(1)
 y_data = torch.tensor(y_data, dtype=torch.float32).unsqueeze(1)
 
-# Random train / test split (80/20)
+# Random train / test split (80/20) with fixed seed for reproducibility
+torch.manual_seed(42)
 n_train = int(0.8 * n_samples)
 indices = torch.randperm(n_samples)
 train_idx, test_idx = indices[:n_train], indices[n_train:]
@@ -256,6 +255,7 @@ optimizer = torch.optim.AdamW(
 )
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=N_EPOCHS)
 
+# MSE for training; relative L2 for final evaluation (function-space metric)
 l2_loss = LpLoss(d=1, p=2)
 mse_loss = nn.MSELoss()
 

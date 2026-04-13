@@ -29,6 +29,7 @@ Inversion to the time domain uses the Stehfest algorithm.
 
 import math
 import numpy as np
+from scipy.special import kv  # modified Bessel functions K_nu
 
 
 def _stehfest_weights(n_stehfest=12):
@@ -85,8 +86,6 @@ def _pwd_laplace(u, cd, s):
     pwd_bar : float
         Laplace-domain wellbore pressure.
     """
-    from scipy.special import kv  # modified Bessel function K_nu
-
     sqrt_u = np.sqrt(u)
     k0 = kv(0, sqrt_u)
     k1 = kv(1, sqrt_u)
